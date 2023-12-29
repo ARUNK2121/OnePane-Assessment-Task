@@ -12,3 +12,4 @@
 - **Concurrent Fetching:** Utilizes goroutines and channels for concurrent data fetching.
 - **No External Dependencies:** Focuses on Go's standard library, avoiding external dependencies.
 - **Built-in Data Structures:** Leverages built-in data structures for efficient data management.
+- **Dockerfile Included:** The repository includes a Dockerfile for containerized deployment.
