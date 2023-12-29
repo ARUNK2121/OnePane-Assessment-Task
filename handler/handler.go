@@ -32,25 +32,25 @@ func (h *Handler) HandleRoute(w http.ResponseWriter, r *http.Request) {
 	var errorChan chan error
 	wg := sync.WaitGroup{}
 	wg.Add(3)
-	go func(c <-chan models.User) {
+	go func() {
 		defer wg.Done()
 		for v := range h.Users {
 			db.Users[int(v.Id)] = v
 		}
-	}(h.Users)
+	}()
 
-	go func(c <-chan models.Comment) {
+	go func() {
 		defer wg.Done()
 		for v := range h.Comments {
 			db.Comments[int(v.PostID)]++
 		}
-	}(h.Comments)
-	go func(c <-chan models.Post) {
+	}()
+	go func() {
 		defer wg.Done()
 		for v := range h.Posts {
 			db.Posts[int(v.ID)] = v
 		}
-	}(h.Posts)
+	}()
 
 	wg.Add(3)
 	go func() {
