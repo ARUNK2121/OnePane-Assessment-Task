@@ -7,7 +7,7 @@ import (
 	"one_pane_assessment/models"
 )
 
-func FetchPosts(c chan<- models.Post, errorChan chan error) {
+func FetchPosts(c chan models.Post, errorChan chan error) {
 	res, err := http.Get("https://jsonplaceholder.typicode.com/posts")
 	if err != nil {
 		errorChan <- err
@@ -28,10 +28,10 @@ func FetchPosts(c chan<- models.Post, errorChan chan error) {
 		v := v
 		c <- v
 	}
-	close(c)
+
 }
 
-func FetchComments(c chan<- models.Comment, errorChan chan error) {
+func FetchComments(c chan models.Comment, errorChan chan error) {
 	res, err := http.Get("https://jsonplaceholder.typicode.com/comments")
 	if err != nil {
 		errorChan <- err
@@ -52,10 +52,9 @@ func FetchComments(c chan<- models.Comment, errorChan chan error) {
 		v := v
 		c <- v
 	}
-	close(c)
 }
 
-func FetchUsers(c chan<- models.User, errorChan chan error) {
+func FetchUsers(c chan models.User, errorChan chan error) {
 	res, err := http.Get("https://jsonplaceholder.typicode.com/users")
 	if err != nil {
 		errorChan <- err
@@ -76,5 +75,4 @@ func FetchUsers(c chan<- models.User, errorChan chan error) {
 		v := v
 		c <- v
 	}
-	close(c)
 }

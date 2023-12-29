@@ -16,44 +16,60 @@ type Handler struct {
 	Users    chan models.User
 }
 
+func (h *Handler) Refresh() {
+	h.Posts = make(chan models.Post)
+	h.Comments = make(chan models.Comment)
+	h.Users = make(chan models.User)
+}
+
 func NewHandler() *Handler {
-	return &Handler{
-		Posts:    make(chan models.Post),
-		Comments: make(chan models.Comment),
-		Users:    make(chan models.User),
-	}
+	return &Handler{}
 }
 
 func (h *Handler) HandleRoute(w http.ResponseWriter, r *http.Request) {
+	h.Refresh()
 	db := database.NewDatabase()
 	var errorChan chan error
-
 	wg := sync.WaitGroup{}
 	wg.Add(3)
-	go func(c <-chan models.User, wg *sync.WaitGroup) {
+	go func(c <-chan models.User) {
 		defer wg.Done()
 		for v := range h.Users {
 			db.Users[int(v.Id)] = v
 		}
-	}(h.Users, &wg)
+	}(h.Users)
 
-	go func(c <-chan models.Comment, wg *sync.WaitGroup) {
+	go func(c <-chan models.Comment) {
 		defer wg.Done()
 		for v := range h.Comments {
 			db.Comments[int(v.PostID)]++
 		}
-	}(h.Comments, &wg)
-
-	go func(c <-chan models.Post, wg *sync.WaitGroup) {
+	}(h.Comments)
+	go func(c <-chan models.Post) {
 		defer wg.Done()
 		for v := range h.Posts {
 			db.Posts[int(v.ID)] = v
 		}
-	}(h.Posts, &wg)
+	}(h.Posts)
 
-	go helper.FetchPosts(h.Posts, errorChan)
-	go helper.FetchComments(h.Comments, errorChan)
-	go helper.FetchUsers(h.Users, errorChan)
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		defer close(h.Posts)
+		helper.FetchPosts(h.Posts, errorChan)
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer close(h.Comments)
+		helper.FetchComments(h.Comments, errorChan)
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer close(h.Users)
+		helper.FetchUsers(h.Users, errorChan)
+	}()
 
 	wg.Wait()
 
