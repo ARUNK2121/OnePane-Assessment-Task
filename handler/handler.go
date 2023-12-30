@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	database "one_pane_assessment/database"
 	"one_pane_assessment/helper"
@@ -29,8 +30,13 @@ func NewHandler() *Handler {
 func (h *Handler) HandleRoute(w http.ResponseWriter, r *http.Request) {
 	h.Refresh()
 	db := database.NewDatabase()
-	var errorChan chan error
+	errorChan := make(chan error)
 	wg := sync.WaitGroup{}
+	go func() {
+		for i := range errorChan {
+			log.Fatal("an error occured during fetching:", i)
+		}
+	}()
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
@@ -72,6 +78,7 @@ func (h *Handler) HandleRoute(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	wg.Wait()
+	close(errorChan)
 
 	var Result []models.Result
 	for i, v := range db.Posts {
