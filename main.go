@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	fmt.Println("check")
 	h := handler.NewHandler()
 	http.HandleFunc("/", h.HandleRoute)
 	fmt.Println("server running on port:8080")
